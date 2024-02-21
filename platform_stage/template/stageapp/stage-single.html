@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load is_stage_already_applied %}
+{% load is_stage_already_saved %}
+{% block content %}
+<!-- HOME -->
+
+
+<section class="section-hero overlay inner-page bg-image"
+  style="background-image: url('{% static 'images/hero_1.jpg' %}');" id="home-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-7">
+        <h1 class="text-white font-weight-bold">{{ stage.title }}</h1>
+        <div class="custom-breadcrumbs">
+          <a href="{% url 'stageapp:home' %}">Home</a> <span class="mx-2 slash">/</span>
+          <a href="{% url 'stageapp:stage-list' %}">Stage</a> <span class="mx-2 slash">/</span>
+          <span class="text-white"><strong>{{ stage.title }}</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="site-section">
+  <div class="container">
+    {% include 'messages.html' %}
+
+    <div class="row align-items-center mb-5">
+      <div class="col-lg-8 mb-4 mb-lg-0">
+        <div class="d-flex align-items-center">
+          <div class="border p-2 d-inline-block mr-3 rounded">
+            <img src="{% static 'images/stage_logo_2.jpg' %}" alt="Image">
+          </div>
+          <div>
+            <h2>{{ stage.title }}</h2>
+            <div>
+              <span class="ml-0 mr-2 mb-2"><span class="icon-briefcase mr-2"></span><a href="{{ stage.url }}">{{ stage.company_name }}</a></span>
+              <span class="m-2"><span class="icon-room mr-2"></span>{{ stage.location }}</span>
+              <span class="m-2"><span class="icon-clock-o mr-2"></span>
+                <span class="text-primary">
+
+                  {% if stage.stage_type == '1' %}
+                  Full Time
+                  {% elif stage.stage_type == '2'%}
+                  Part Time
+                  {% else  %}
+                  Internship
+                  {% endif %}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="row">
+          <div class="col-5">
+            {% if user.is_authenticated and user.role == 'student' %}
+                {% is_stage_already_saved stage request.user as is_saved %}
+                {% if is_saved %}
+                <span href="#" class="btn btn-block btn-light btn-md"><span
+                    class="icon-heart-o mr-2 text-danger"></span>Saved</span>
+                {% else %}
+
+                <form action="{% url 'stageapp:bookmark-stage' stage.id %}" method="POST">
+                  {% csrf_token %}
+                  <input type="hidden" name="stage" value="{{ stage.id }}">
+                  <input type="submit" class="btn btn-block btn-light btn-md" value="Save Stage" />
+                </form>
+                {% endif %}
+            
+            {% elif request.user.id == stage.user.id and  user.role == 'employer'  %}
+            <button onclick="call_sw_alert_func('{% url 'stageapp:delete' stage.id %}','{{ stage.id }}','Once Deleted, You Will Not be Able To Recover This Post!')" class="btn btn-block btn-danger btn-md">Delete</button>
+                                   
+            {% comment %} {% else %}
+
+            <form action="{% url 'stageapp:bookmark-stage' stage.id %}" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="stage" value="{{ stage.id }}">
+
+              <input type="submit" class="btn btn-block btn-light btn-md" value="Save" />
+            </form> {% endcomment %}
+
+            {% endif %}
+
+          </div>
+
+        <div class="col-7">
+          {% if user.is_authenticated and user.role == 'student' %}
+            {% is_stage_already_applied stage request.user as is_applied %}
+              {% if is_applied %}
+
+              <span  class="btn btn-block btn-danger btn-md">Already Applied</span>
+
+              {% else %}
+
+              <form action="{% url 'stageapp:apply-stage' stage.id %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="stage" value="{{ stage.id }}">
+
+                <input type="submit" class="btn btn-block btn-primary btn-md" value="Apply Now" />
+              </form>
+              {% endif %}
+            
+          {% elif request.user.id == stage.user.id and user.role == 'employer' %}
+
+          <a href="{% url 'stageapp:edit-stage' stage.id %}" class="btn btn-block btn-light btn-md">Edit</a>
+           {% else %}
+              <a href="{% url 'stageapp:create-stage' %}" class="btn btn-block btn-primary btn-md">Publish Your Stage</a>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="mb-5">
+          <!-- <figure class="mb-5"><img src="images/stage_single_img_1.jpg" alt="Image" class="img-fluid rounded"></figure> -->
+          <h3 class="h5 d-flex align-items-center mb-4 text-primary"><span class="icon-align-left mr-3"></span>Stage
+            Description</h3>
+          {{ stage.description | safe }}
+        </div>
+
+        <div class="row mb-5">
+          <div class="col-6">
+
+            {% if user.is_authenticated and user.role == 'student' %}
+            {% is_stage_already_saved stage request.user as is_saved %}
+            {% if is_saved %}
+            <span class="btn btn-block btn-light btn-md"><span class="icon-heart-o mr-2 text-danger"></span>Already
+              Saved
+              Stage</span>
+            {% else %}
+
+            <form action="{% url 'stageapp:bookmark-stage' stage.id %}" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="stage" value="{{ stage.id }}">
+              <input type="submit" class="btn btn-block btn-light btn-md" value="Save" />
+
+            </form>
+
+            {% endif %}
+
+            {% elif request.user.id == stage.user.id and user.role == 'employer' %}
+            <button onclick="call_sw_alert_func('{% url 'stageapp:delete' stage.id %}','{{ stage.id }}','Once Deleted, You Will Not be Able To Recover This Post!')" class="btn btn-block btn-danger btn-md">Delete</button>
+                                   
+           {% elif user.role == none %}
+
+            <form action="{% url 'stageapp:bookmark-stage' stage.id %}" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="stage" value="{{ stage.id }}">
+
+              <input type="submit" class="btn btn-block btn-light btn-md" value="Save" />
+            </form>
+
+            {% endif %}
+          </div>
+          {% if user.is_authenticated and  user.role == 'student' %}
+          {% is_stage_already_applied stage request.user as is_applied %}
+          {% if is_applied %}
+
+          <div class="col-6">
+            <span class="btn btn-block btn-danger btn-md">Already Applied</span>
+          </div>
+          {% else %}
+          <div class="col-6">
+            <form action="{% url 'stageapp:apply-stage' stage.id %}" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="stage" value="{{ stage.id }}">
+
+              <input type="submit" class="btn btn-block btn-primary btn-md" value="Apply Now" />
+            </form>
+          </div>
+          {% endif %}
+
+          {% elif  request.user.id == stage.user.id and  user.role == 'employer' %}
+          <div class="col-6">
+
+            <a href="{% url 'stageapp:edit-stage' stage.id %}" class="btn btn-block btn-light btn-md">Edit</a>
+          </div>
+          {% elif user.role == none %}
+            <div class="col-6">
+              <form action="{% url 'stageapp:apply-stage' stage.id %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="stage" value="{{ stage.id }}">
+
+                <input type="submit" class="btn btn-block btn-primary btn-md" value="Apply Now" />
+              </form>
+          </div> 
+          {% endif %}
+        </div>
+
+      </div>
+      <div class="col-lg-4">
+        <div class="bg-light p-3 border rounded mb-4">
+          <h3 class="text-primary  mt-3 h5 pl-3 mb-3 ">Stage Summary</h3>
+          <ul class="list-unstyled pl-3 mb-0">
+            <li class="mb-2"><strong class="text-black">Published on:</strong> {{ stage.timestamp|date:"d M Y" }}</li>
+            <li class="mb-2"><strong class="text-black">Employment Status:</strong>
+              {% if stage.stage_type == '1' %}
+              Full Time
+              {% elif stage.stage_type == '2'%}
+              Part Time
+              {% else  %}
+              Internship
+              {% endif %}
+            </li>
+            <li class="mb-2"><strong class="text-black">Stage Location:</strong> {{ stage.location }}</li>
+            <li class="mb-2"><strong class="text-black">Salary:</strong> {{ stage.salary }}</li>
+            <li class="mb-2"><strong class="text-black">Application Deadline:</strong> {{ stage.last_date|date:"d M Y" }}
+            </li>
+          </ul>
+        </div>
+
+        <div class="bg-light p-3 border rounded">
+          <h3 class="text-primary  mt-3 h5 pl-3 mb-3 ">Share</h3>
+          <div class="px-3">
+            <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-facebook"></span></a>
+            <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-twitter"></span></a>
+            <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-linkedin"></span></a>
+            <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-pinterest"></span></a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% if page_obj %}
+
+<section class="site-section" id="next">
+  <div class="container">
+
+    <div class="row mb-5 justify-content-center">
+      <div class="col-md-7 text-center">
+        <h2 class="section-title mb-2">{{ total }} Related Jobs</h2>
+      </div>
+    </div>
+
+    <ul class="stage-listings mb-5">
+      {% for stage in page_obj %}
+      <li class="stage-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
+        <a href="{% url 'stageapp:single-stage' stage.id %}"></a>
+        <div class="stage-listing-logo">
+          <img src="{% static 'images/i.jpg' %}" alt="Image" class="img-fluid">
+        </div>
+
+        <div class="stage-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
+          <div class="stage-listing-position custom-width w-50 mb-3 mb-sm-0">
+            <h2>{{ stage.title}}</h2>
+            <strong>{{ stage.company_name }}</strong>
+          </div>
+          <div class="stage-listing-location mb-3 mb-sm-0 custom-width w-25">
+            <span class="icon-room"></span> {{ stage.location }}
+          </div>
+          <div class="stage-listing-meta">
+            <span class="badge badge-danger">
+              {% if stage.stage_type == '1' %}
+              Full Time
+              {% elif stage.stage_type == '2'%}
+              Part Time
+              {% else  %}
+              Internship
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+
+
+    </ul>
+
+
+    {% include 'stageapp/paginator.html' %}
+
+  </div>
+</section>
+{% endif %}
+{% endblock content %}
+{% block extra_scripts %}
+<script src="{% static 'js/sweet-alert.js' %}"></script>
+<script src="{% static 'js/sweet-alert-ajax.js' %}"></script>
+
+{% endblock %}

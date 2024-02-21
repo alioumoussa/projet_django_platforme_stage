@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- HOME -->
+<section class="home-section section-hero overlay bg-image"
+  style="background-image: url('{% static 'images/hero_1.jpg' %}');" id="home-section">
+
+  <div class="container">
+    <div class="row align-items-center justify-content-center">
+      <div class="col-md-12">
+        <div class="mb-5 text-center">
+          {% if request.user.role == 'employer' %}
+          <h1 class="text-white font-weight-bold">La plateforme idéale pour recruter vos futurs talents</h1>
+          <p>Explorez une vaste sélection de candidats qualifiés et trouvez le profil idéal pour votre entreprise.</p>
+          {% elif request.user.role == 'student' %}
+          <h1 class="text-white font-weight-bold">Trouvez votre stage idéal en un clic</h1>
+          <p>Parcourez les offres de stage de nos partenaires et postulez en quelques clics pour décrocher votre opportunité.</p>
+          {% else %}
+          <h1 class="text-white font-weight-bold">Bienvenue sur notre plateforme de stages</h1>
+          <p>Rejoignez notre communauté pour découvrir des opportunités de stage passionnantes et construire votre avenir professionnel.</p>
+          {% endif %}
+        </div>
+        {% if request.user.role != "employer" %}
+        <form method="GET" action="{% url 'stageapp:search_result' %}" class="search-jobs-form">
+          {% include 'stageapp/search.html' %}
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <a href="#next" class="scroll-button smoothscroll">
+    <span class=" icon-keyboard_arrow_down"></span>
+  </a>
+
+</section>
+
+<section class="py-5 bg-image overlay-primary fixed overlay" id="next"
+  style="background-image: url('{% static 'images/hero_1.jpg' %}');">
+  <div class="container">
+    <div class="row mb-5 justify-content-center">
+      <div class="col-md-7 text-center">
+        {% if request.user.role == 'employer' %}
+        <h2 class="section-title mb-2 text-white">Statistiques de notre plateforme de recrutement</h2>
+        <p class="lead text-white">Explorez nos statistiques pour découvrir comment nous pouvons vous aider à trouver les meilleurs talents pour votre entreprise.</p>
+        {% else %}
+        <h2 class="section-title mb-2 text-white">Statistiques de notre plateforme de stages</h2>
+        <p class="lead text-white">Découvrez nos statistiques pour comprendre l'ampleur des opportunités de stage disponibles sur notre plateforme.</p>
+        {% endif %}
+      </div
+    </div>
+    <div class="row pb-0 block__19738 section-counter">
+
+      <div class="col-6 col-md-6 col-lg-3 mb-5 mb-lg-0">
+        <div class="d-flex align-items-center justify-content-center mb-2">
+          <strong class="number" data-number="{{ total_candidates }}">0</strong>
+        </div>
+        <span class="caption">Candidates</span>
+      </div>
+
+      <div class="col-6 col-md-6 col-lg-3 mb-5 mb-lg-0">
+        <div class="d-flex align-items-center justify-content-center mb-2">
+          <strong class="number" data-number="{{ total_jobs }}">0</strong>
+        </div>
+        <span class="caption">Stages Posted</span>
+      </div>
+
+      <div class="col-6 col-md-6 col-lg-3 mb-5 mb-lg-0">
+        <div class="d-flex align-items-center justify-content-center mb-2">
+          <strong class="number" data-number="{{ total_completed_jobs }}">0</strong>
+        </div>
+        <span class="caption">Stages Filled</span>
+      </div>
+
+      <div class="col-6 col-md-6 col-lg-3 mb-5 mb-lg-0">
+        <div class="d-flex align-items-center justify-content-center mb-2">
+          <strong class="number" data-number="{{ total_companies }}">0</strong>
+        </div>
+        <span class="caption">Entreprises</span>
+      </div>
+
+
+    </div>
+  </div>
+</section>
+
+<section id="ajax_listing_paginattion" class="site-section">
+  <div class="container">
+
+    {% if page_obj %}
+    <div class="row mb-5 justify-content-center">
+      <div class="col-md-7 text-center">
+        <h2 class="section-title mb-2">{{ total_jobs }} Stage Listed</h2>
+      </div>
+    </div>
+
+
+    <ul id="stage" class="stage-listings mb-5">
+      {% for stage in page_obj %}
+      <li class="stage-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
+        <a href="{% url 'stageapp:single-stage' stage.id %}"></a>
+        <div class="stage-listing-logo">
+          <img src="{% static 'images/i.jpg' %}" alt="Free Website Template by Free-Template.co"
+            class="img-fluid">
+        </div>
+
+        <div class="stage-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
+          <div class="stage-listing-position custom-width w-50 mb-3 mb-sm-0">
+            <h2>{{ stage.title }}</h2>
+            <strong>{{ stage.company_name }}</strong>
+          </div>
+          <div class="stage-listing-location mb-3 mb-sm-0 custom-width w-25">
+            <span class="icon-room"></span> {{ stage.location }}
+          </div>
+          <div class="stage-listing-meta">
+            {% if stage.stage_type == '1' %}
+            <span class="badge badge-success">
+              Full Time
+            </span>
+            {% elif stage.stage_type == '2'%}
+            <span class="badge badge-danger">
+              Part Time
+            </span>
+            {% else  %}
+      <!-- <span class="badge badge-info">
+              Internship
+            </span>       -->
+            {% endif %}
+          </div>
+        </div>
+
+      </li>
+      {% endfor %}
+    </ul>
+    {% include 'stageapp/paginator.html' %}
+  </div>
+  {% endif %}
+</section>
+
+<section class="py-5 bg-image overlay-primary fixed overlay" style="background-image: url('{% static 'images/hero_1.jpg' %}');">
+  <div class="container">
+    {% if request.user.role == 'employer' %}
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h2 class="text-white">Envie de recruter de nouveaux talents ?</h2>
+        <p class="mb-0 text-white lead">Trouvez rapidement les profils les plus adaptés à vos besoins en publiant vos offres de stage sur notre plateforme.</p>
+      </div>
+      <div class="col-md-3 ml-auto">
+        <a href="{% url 'stageapp:create-stage' %}" class="btn btn-warning btn-block btn-lg">Publiez votre offre</a>
+      </div>
+    </div>
+    {% elif request.user.role == 'student' %}
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h2 class="text-white">À la recherche d'un stage passionnant ?</h2>
+        <p class="mb-0 text-white lead">Explorez nos offres de stage et postulez en quelques clics pour rejoindre une entreprise innovante et dynamique.</p>
+      </div>
+      <div class="col-md-3 ml-auto">
+        <a href="{% url 'stageapp:stage-list' %}" class="btn btn-warning btn-block btn-lg">Voir les offres</a>
+      </div>
+    </div>
+    {% else %}
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h2 class="text-white">Envie de découvrir de nouvelles opportunités de stage ?</h2>
+        <p class="mb-0 text-white lead">Inscrivez-vous dès maintenant pour accéder à toutes nos offres de stage et construire votre parcours professionnel.</p>
+      </div>
+      <div class="col-md-3 ml-auto">
+        <a href="{% url 'account:student-registration' %}" class="btn btn-warning btn-block btn-lg">Inscrivez-vous</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+<section class="bg-light pt-5 testimony-full">
+
+  <div class="owl-carousel single-carousel">
+
+
+    <!-- <div class="container">
+      <div class="row">
+        <div class="col-lg-6 align-self-center text-center text-lg-left">
+          <blockquote>
+            <p>&ldquo;Soluta quasi cum delectus eum facilis recusandae nesciunt molestias accusantium libero dolores
+              repellat id in dolorem laborum ad modi qui at quas dolorum voluptatem voluptatum repudiandae.&rdquo;</p>
+            <p><cite> &mdash; Corey Woods, @Dribbble</cite></p>
+          </blockquote>
+        </div>
+        <div class="col-lg-6 align-self-end text-center text-lg-right">
+          <img src="images/person_transparent_2.png" alt="Image" class="img-fluid mb-0">
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6 align-self-center text-center text-lg-left">
+          <blockquote>
+            <p>&ldquo;Soluta quasi cum delectus eum facilis recusandae nesciunt molestias accusantium libero dolores
+              repellat id in dolorem laborum ad modi qui at quas dolorum voluptatem voluptatum repudiandae.&rdquo;</p>
+            <p><cite> &mdash; Chris Peters, @Google</cite></p>
+          </blockquote>
+        </div>
+        <div class="col-lg-6 align-self-end text-center text-lg-right">
+          <img src="images/person_transparent.png" alt="Image" class="img-fluid mb-0">
+        </div>
+      </div>
+    </div> -->
+
+  </div>
+
+</section>
+
+
+{% endblock %}
+{% block extra_scripts %}
+<script>
+
+$("#ajax_listing_paginattion" ).delegate( "a#ajax_paginator", "click", function( event ) {
+		event.preventDefault();
+    joblist = ``
+    next_paging = ``
+    prev_paging = ``
+    page_navigator = ``
+		var page_ref = $(this).attr('href');
+    var page_number = page_ref.slice(6);
+    console.log('page_number', page_number);
+		$.ajax({
+					type: "GET",
+					url: "{% url 'stageapp:home' %}", 
+					data : {    
+          page : page_number, 
+				},
+        success: function (response) {
+          $('#stage').html('')
+                    response.stage_lists.map(function (stage) {
+
+                        joblist+=`
+                          <li id="next" class="stage-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
+                            <a href="/stage/${stage.id}/"></a>
+                              <div class="stage-listing-logo">
+                                <img src="{% static 'images/i.jpg' %}" alt="Free Website Template by Free-Template.co"
+                                  class="img-fluid">
+                              </div>
+
+                              <div class="stage-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
+                                <div class="stage-listing-position custom-width w-50 mb-3 mb-sm-0">
+                                  <h2>${ stage.title }</h2>
+                                  <strong>${ stage.company_name }</strong>
+                                </div>
+                                <div class="stage-listing-location mb-3 mb-sm-0 custom-width w-25">
+                                  <span class="icon-room"></span>${ stage.location } 
+                                </div>
+                                
+                                <div class="stage-listing-meta">
+                                  ${ stage.stage_type == '1'
+                                  ?  
+                                  `<span class="badge badge-success">
+                                    Full Time
+                                  </span>`
+                                  : 
+                                  stage.stage_type == '2' 
+                                  ?  
+                                  `<span class="badge badge-danger">
+                                    Part Time
+                                  </span>` 
+                                  :
+                                  `<span class="badge badge-info">
+                                    Internship
+                                  </span>
+                                  `
+                                  }
+                                </div>
+                              </div>
+                            </li>
+                        ` 
+                      })
+
+                        $('#stage').html(joblist)
+                        response.next_page_number != null ?
+                        next_paging+=`<a id="ajax_paginator" class="next" href="?page=${ response.next_page_number }">Next</a>`
+                        : ''
+
+                        $('div>#next_page').html(next_paging)
+                        $('div>.active').removeClass('active')
+                        $('div>.ajax_paginator_'+response.current_page_no).addClass('active')
+                        
+                        // .attr('href','http://example.com')
+                        // .removeAttr("href");
+                        
+                        response.current_page_no > 1 ?
+                        prev_paging+=`<a id="ajax_paginator" href="?page=${ response.prev_page_number }" class="prev">Prev</a>`
+                        : ''
+                        $('div>#prev_page').html(prev_paging)
+
+                        page_navigator+=`Showing ${ response.current_page_no } of ${ response.no_of_page } Pages`
+                        $('div>#page_navigator').html(page_navigator)
+                      
+                    },
+                    
+				error: function () {
+					alert('Error Occured');
+				}
+			});
+
+	});  
+  
+  
+	</script>
+{% endblock %}
+
+

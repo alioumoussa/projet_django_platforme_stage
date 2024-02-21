@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load get_total_applicant %}
+{% block content %}
+
+<section class="section-hero overlay inner-page bg-image"
+    style="background-image: url('{% static 'images/hero_1.jpg' %}');" id="home-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <h1 class="text-white font-weight-bold">Dashboard</h1>
+                <div class="custom-breadcrumbs">
+                    <a href="{% url 'stageapp:home' %}">Home</a> <span class="mx-2 slash">/</span>
+                    <a href="{% url 'stageapp:stage-list' %}">Stage</a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong>Dashboard</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="site-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 mb-5">
+                {% include 'messages.html' %}
+
+                <div class="card">
+                    {% if user.role == "employer" %}
+                    <h5 class="card-header text-center">My All Stage</h5>
+                    {% if jobs %}
+                    <table class="table text-center mt-5">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Stage Title</th>
+                                <th>Posted Date</th>
+                                <th>Date expiring</th>
+                                <th>Status</th>
+                                <th>Applicants</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stage in jobs %}
+                            <tr id="row_{{ stage.id }}">
+                                <td class="text-left"><a href="{% url 'stageapp:single-stage' stage.id %}">{{ stage.title }}</a></td>
+                                <td>{{ stage.timestamp | date:'M d, Y'  }}</td>
+                                <td>{{ stage.last_date | date:'M d, Y' }}</td>
+                                <td>
+                                    {% if stage.is_published == True %}
+                                
+                                        <span class="badge badge-info">Published</span>
+                                
+                                    {% else %}
+
+                                        <span class="badge badge-danger px-2">Pending</span>
+
+                                    {% endif %}
+                                
+                                </td>
+
+                                <td>
+
+                                    {% get_total_applicant total_applicants stage as is_applicant %}
+
+                                    {% if is_applicant %}
+                                    <a href="{% url 'stageapp:applicants' stage.id %}">
+                                        <i class="fa fa-users"></i>
+                                        <span class="badge badge-success text-white">
+
+                                       
+                                            {% if is_applicant > 1 %}
+
+
+                                            {% get_total_applicant total_applicants stage %} Applicants
+
+                                            {% else %}
+
+                                            {% get_total_applicant total_applicants stage %} Applicant
+
+                                            {% endif %}
+
+                                        </span>
+                                        
+                                    </a>
+                                    {% endif %}
+
+                                </td>
+                                <td>
+                                    <a class="btn btn-info btn-sm" href="{% url 'stageapp:edit-stage' stage.id %}"
+                                        role="button">Edit</a>
+                                    {% if stage.is_published == True %}
+                                        {% if stage.is_closed == False %}
+                                        <span id="change_stage_status_{{ stage.id }}">
+                                            <button onclick="call_sw_alert_func('{% url 'stageapp:complete' stage.id %}','{{ stage.id }}', 'Once Clicked, Your Post Will Marked Completed')" class="text-white btn btn-success btn-sm" >Make Close</button>
+                                        </span>
+                                        {% else %}
+                                        <a class="text-white btn btn-success btn-sm" 
+                                        role="button">Closed</a>                                    
+                                        {% endif %}
+                                        {% endif %}
+                                    <button onclick="call_sw_alert_func('{% url 'stageapp:delete' stage.id %}','{{ stage.id }}','Once Deleted, You Will Not be Able To Recover This Post!')" class="btn btn-danger btn-sm">Delete</button>
+                                    </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="m-5">You have not any stage yet !! <a href="{% url 'stageapp:create-stage' %}">Create a new one.</a></p>
+                    {% endif %}
+                    {% elif user.role == "student" %}
+
+
+                    <ul class="mb-3 nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Bookmarked Stage</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Aplied Stage</a>
+                        </li>
+                      </ul>
+                      <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                            <h5 class="card-header text-center">Bookmarked Posts</h5>
+                            {% if savedjobs %}
+                            <table class="table text-center mt-5">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Stage Title</th>
+                                        <th>Posted Date</th>
+                                        <th>Date expiring</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stage in savedjobs %}
+                                    <tr id="row_{{ stage.id }}">
+                                        <td><a href="{% url 'stageapp:single-stage' stage.stage.id %}">{{ stage.stage.title }}</a></td>
+                                        <td>{{ stage.timestamp | date:'M d, Y'  }}</td>
+                                        <td>{{ stage.stage.last_date | date:'M d, Y' }}</td>
+                                        <td>
+                                            <button onclick="call_sw_alert_func('{% url 'stageapp:delete-bookmark' stage.id %}','{{ stage.id }}','Once Deleted, This Post Will Remove From Your Favourite List!')" class="btn btn-danger btn-sm">Delete</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% else %}
+                            <p class="m-5">You have not any save stage yet !! </p>
+                            {% endif %}
+                        </div>
+                        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                            <h5 class="card-header text-center">Aplied Posts</h5>
+                            {% if appliedjobs %}
+                            <table class="table text-center mt-5">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Stage Title</th>
+                                        <th>Posted Date</th>
+                                        <th>Date expiring</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stage in appliedjobs %}
+                                    <tr id="row_{{ stage.id }}">
+                                        <td><a href="{% url 'stageapp:single-stage' stage.stage.id %}">{{ stage.stage.title }}</a></td>
+                                        <td>{{ stage.timestamp | date:'M d, Y'  }}</td>
+                                        <td>{{ stage.stage.last_date | date:'M d, Y' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% else %}
+                            <p class="m-5">You have not any applied stage yet !! </p>
+                            {% endif %}
+                        </div>
+                        
+                      </div>
+
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'js/sweet-alert.js' %}"></script>
+    <script src="{% static 'js/sweet-alert-ajax.js' %}"></script>
+{% endblock %}
+
+
